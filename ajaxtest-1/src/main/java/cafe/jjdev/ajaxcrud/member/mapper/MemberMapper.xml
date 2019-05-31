@@ -1,0 +1,65 @@
+<!DOCTYPE mapper
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cafe.jjdev.ajaxcrud.member.mapper.MemberMapper">
+	<select id="selectMemberList" parameterType = "java.util.Map" resultType="cafe.jjdev.ajaxcrud.member.vo.Member">
+		SELECT 
+			id
+			,pw
+			,name
+			,age
+			,gender 
+		FROM member
+		LIMIT #{beginPage}, #{rowPerPage}
+	</select>
+	
+	
+		
+	
+	<select id="cheakId" resultType="cafe.jjdev.ajaxcrud.member.vo.Member">
+		SELECT 
+			id
+			,pw
+			,name
+			,age
+			,gender 
+		FROM member
+	</select>
+	
+	<insert id="insertMember" parameterType="cafe.jjdev.ajaxcrud.member.vo.Member">
+		INSERT INTO member(
+			id
+			,pw
+			,name
+			,age
+			,gender
+		) VALUES (
+			#{id}
+			,#{pw}
+			,#{name}
+			,#{age}
+			,#{gender}
+		)
+	</insert>
+	
+	<delete id="deleteMember" parameterType="cafe.jjdev.ajaxcrud.member.vo.Member">
+		DELETE FROM 
+			member 
+		WHERE id=#{id}
+	</delete>
+	
+	<update id="updateMember" parameterType="cafe.jjdev.ajaxcrud.member.vo.Member">
+		UPDATE member 
+		SET pw=#{pw}
+			,name=#{name}
+			,age=#{age}
+			,gender=#{gender}
+		WHERE id=#{id}
+	</update>
+
+	<select id="sumMember" resultType="int">
+	SELECT count(*) FROM member
+	</select>
+
+
+</mapper>

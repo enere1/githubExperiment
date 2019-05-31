@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Member</title>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<script>
+
+$(document).ready(function(){
+	//지역변수 선언
+	let currentPage = 1;    
+	let lastpage = 0;
+	
+	// 삭제
+    $('#btnRemove').click(function(){ // $('#btnRemove').click()
+    	let ck = new Array(); // let ck = [];
+        $('.ck:checked').each(function(index,item){ 
+            ck.push($(item).val());
+        });
+        console.log('#btnRemove click');
+        $.ajax({
+        	url:'/removeMember'
+        	,type:'POST'
+        	,data:{'ck':ck}
+            ,success:function(){
+            	$('#btnList').trigger('click');
+            }
+        });
+    });
+    															
+   
+    
+    // 추가
+    $('#btnAdd').click(function(){
+    	let id = $('#id').val();
+        let pw = $('#pw').val();
+        let name = $('#name').val();
+        let age = $('#age').val();
+        let gender = $('#gender').val();
+        console.log('#btnAdd click');
+    	
+        //폼 유효성 검사
+        if(id==""){
+        	console.log('id 미 입력');
+        }
+        else if(pw==""){
+        	console.log('pw 미 입력');
+        }
+        else if(name==""){
+        	console.log('name 미 입력'); 	
+        }
+        else if(age==""){
+        	console.log('age 미 입력');
+        }
+        
+    	$.ajax({
+        	url:'/addMember'
+        	,type:'POST'
+        	,data:{'id':id,'pw':pw,'name':name,'age':age,'gender':gender}
+    		,success : function(data) {
+    			console.log(data); //아이디 중복되면 "아이디가 중복됩니다" , 중복 아닌경우  "가입이 완료되었습니다"
+    			$('#btnList').trigger('click');
+    			}
+    		});
+   		});
+    
+    
+    
+    // 수정
+    $('#btnModify').click(function(){
+    	let id = $('#id').val();
+        let pw = $(' #pw').val();
+        let name = $('#name').val();
+        let age = $('#age').val();
+        let gender = $('#gender').val();
+    	console.log('#btnModify click');
+    	$.ajax({
+        	url:'/modifyMember'
+        	,type:'POST'
+        	,data:{'id':id,'pw':pw,'name':name,'age':age,'gender':gender}
+    		,success : function() {
+    			$('#btnList').trigger('click');
+    		}
+        });
+    });
+    
+    //목록
+    $('#btnList').click(function(){
+    	console.log('#btnList click');
+    	//리스트 안비우면 계속 추가됨
+    	$('#list').empty(); 
+    //이전페이지 버튼 숨기기
+    $('#previousPage').hide();
+    //이후페이지 버튼 숨기기
+    $('#nextPage').hide();
+    //첫페이지 버튼 숨기기	
+    $('#firstPage').hide();
+    //마지막페이지 버튼 숨기기;
+    $('#lastPage').hide();
+    $.ajax({
+        	url:'/getMembers'
+        	,type:'GET'
+        	,dataType :'json'
+        	,data:{'currentPage':currentPage}
+       		,success:function(data){// 콜백함수 , json방식으로 서버에서 data가져옴
+                   $(data.list).each(function(index,item){
+                       //data는 서버로부터 전송받은 결과(JSON)이므로 바로 사용한다
+                	   $('#list').append('<tr>');
+                       $('#list').append('<td><input type="checkbox" class="ck" value="'+item.id+'"></td>');
+                       $('#list').append('<td>'+item.id+'</td>');
+                       $('#list').append('<td>'+item.pw+'</td>');
+                       $('#list').append('<td>'+item.name+'</td>');
+                       $('#list').append('<td>'+item.age+'</td>');
+                       $('#list').append('<td>'+item.gender+'</td>');
+                       $('#list').append('</tr>');
+               
+                   });      		      	
+                   
+       			   //이벤트리스너 map에 담긴값 필드 값으로 변경
+                   lastPage = parseInt(data.lastPage);
+                   console.log('[lastPage]'+lastPage);
+                   
+                   //현재페이지>1 커야 이전페이지 등장
+                   if(currentPage>1){
+                	   $('#firstPage').show("slow");
+                	   $('#previousPage').show(1000, "linear");
+                   }
+                   
+                   
+                   //현제페이지<lastPage 작아야 보여줌
+                   if(currentPage<lastPage){
+                	   $('#nextPage').show("slow");
+                	   $('#lastPage').show(1000,"linear");
+           			}
+                   	
+           			
+       		}
+  	  });
+  });
+   	
+    
+    //이전페이지
+    $('#previousPage').click(function(){
+		console.log('#previousPage click');
+		currentPage -= 1; //현재페이지에서 -1감소
+		$('#btnList').trigger('click');
+		console.log("currentPage:"+currentPage);
+	});
+
+	
+    //다음페이지
+	$('#nextPage').click(function(){
+		console.log('#nextPage click');
+		currentPage += 1; //현재페이지에서 1씩 증가
+		$('#btnList').trigger('click');
+		console.log("currentPage:"+currentPage);
+		});
+
+    //첫페이지
+    $('#firstPage').click(function(){
+    	console.log('#firstPage click');
+    	currentPage = 1; 
+    	console.log('#currentpage:'+currentPage);
+    	$('#btnList').trigger('click');
+    })
+    
+    //마지막페이지
+    $('#lastPage').click(function(){
+    	console.log('#lastPage click');
+    	console.log("[currentPage]"+currentPage);
+    	currentPage = lastPage;
+    	$('#btnList').trigger('click');
+    })
+    
+     //trigger 직접 클릭안해도 이벤트발생 메소드
+	 $('#btnList').trigger('click'); 
+});
+
+	
+
+</script>
+</head>
+<body>
+	<h1>Member</h1>
+	<table border="1">
+        <thead>
+            <tr>
+                <th>id</th>
+                <th>pw</th>
+                <th>name</th>
+                <th>age</th>
+                <th>gender</th>
+                <th>추가</th>
+                <th>수정</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><input type="text" id="id"></td>
+                <td><input type="password" id="pw"></td>
+                <td><input type="text" id="name"></td>
+                <td><input type="text" id="age"></td>
+                <td>
+                    <select id="gender">
+                        <option value="Male">남</option>
+                        <option value="Female">여</option>
+                    </select>
+                </td>
+                <td><button type="button" id="btnAdd">add</button></td>
+                <td><button type="button" id="btnModify">modify</button></td>
+            </tr>
+        </tbody>
+    </table>
+ 
+    <button type="button" id="btnList">회원리스트</button>
+    <button type="button" id="btnRemove">remove</button>
+    <table border="1">
+        <thead>
+            <tr>
+                <th></th>
+                <th>id</th>
+                <th>pw</th>
+                <th>name</th>
+                <th>age</th>
+                <th>gender</th>
+                <th>ssss</th>
+            </tr>
+        </thead>
+        <tbody id="list">
+        </tbody>
+    </table> 
+	<button type="button" id="firstPage">첫페이지</button>
+	<button type="button" id="previousPage">이전페이지</button>
+	<button type="button" id="nextPage">이후페이지</button>
+	<button type="button" id="lastPage">마지막페이지</button>
+</body>
+</html>

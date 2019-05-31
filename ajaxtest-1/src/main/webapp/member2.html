@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Member</title>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<script>
+
+$(document).ready(function(){
+	//지역변수 선언
+	let currentPage;    
+	let lastPage;
+	
+	// 삭제
+    $('#btnRemove').click(function(){ // $('#btnRemove').click()
+    	let ck = new Array(); // let ck = [];
+        $('.ck:checked').each(function(index,item){ 
+            ck.push($(item).val());
+        });
+        console.log('#btnRemove click');
+        $.ajax({
+        	url:'/removeMember'
+        	,type:'POST'
+        	,data:{'ck':ck}
+            ,success:function(){
+            	$('#btnList').trigger('click');
+            }
+        });
+    });
+    															
+   
+    
+    // 추가
+    $('#btnAdd').click(function(){
+    	let id = $('#id').val();
+        let pw = $('#pw').val();
+        let name = $('#name').val();
+        let age = $('#age').val();
+        let gender = $('#gender').val();
+        console.log('#btnAdd click');
+    	
+  
+    	$.ajax({
+        	url:'/addMember'
+        	,type:'POST'
+        	,data:{'id':id,'pw':pw,'name':name,'age':age,'gender':gender}
+    		,success : function() {
+    			$('#btnList').trigger('click');
+    			
+    			}
+    		});
+   		});
+    
+    
+    
+    // 수정
+    $('#btnModify').click(function(){
+    	let id = $('#id').val();
+        let pw = $(' #pw').val();
+        let name = $('#name').val();
+        let age = $('#age').val();
+        let gender = $('#gender').val();
+    	console.log('#btnModify click');
+    	$.ajax({
+        	url:'/modifyMember'
+        	,type:'POST'
+        	,data:{'id':id,'pw':pw,'name':name,'age':age,'gender':gender}
+    		,success : function() {
+    			$('#btnList').trigger('click');
+    		}
+        });
+    });
+    
+    // 목록
+    $('#btnList').click(function(){
+    	console.log('#btnList click');
+    	$.ajax({
+        	url:'/getMembers'
+        	,type:'GET'
+        	,dataType :'json'
+        	,data:{'currentPage':currentPage}
+       		,success:function(data){// 콜백함수 , json방식으로 서버에서 data가져옴
+                   $(data.list).each(function(index,item){
+                       //data는 서버로부터 전송받은 결과(JSON)이므로 바로 사용한다
+                	   $('#list').append('<tr>');
+                       $('#list').append('<td><input type="checkbox" class="ck" value="'+item.id+'"></td>');
+                       $('#list').append('<td>'+item.id+'</td>');
+                       $('#list').append('<td>'+item.pw+'</td>');
+                       $('#list').append('<td>'+item.name+'</td>');
+                       $('#list').append('<td>'+item.age+'</td>');
+                       $('#list').append('<td>'+item.gender+'</td>');
+                       $('#list').append('</tr>');
+                   });
+       				
+       				//이벤트 핸들링 
+       				//필드 값 재설정
+                   currentPage = parseInt(data.currentPage);
+                   lastPage = parseInt(data.lastPage);
+       			console.log("currentPage:"+currentPage);
+       			console.log("lastPage:"+lastPage);
+       		}
+        });
+    });
+   
+    //이전페이지
+	
+    $('#previousPage').click(function(){
+		console.log('#previousPage click');
+		
+		$.ajax({
+		url:'/getMembers'//요청페이지
+		,type:'GET'//get방식
+		,dataType :'json'//json형식으로 보냄
+		,data:{'currentPage':currentPage-1}//보내는 데이터(json형식)
+		,success : function(data){ //이벤트리스너 이벤트 끝나면 데이터를 어떻게 처리할지
+			//필드값 재설정
+			 currentPage = parseInt(data.currentPage);
+             lastPage = parseInt(data.lastPage);
+			$('#btnList').trigger('click');
+			console.log("previousPage:"+currentPage);
+		}
+		
+		});
+		
+	});
+
+	//다음페이지
+	$('#nextPage').click(function(){
+		console.log('#nextPage click');
+		$.ajax({
+		url:'/getMembers'//요청페이지	
+		,type:'GET'//get방식
+		,dataType:'json'//json형식으로 보냄
+		,data:{'currentPage':currentPage+1}//보내는 데이터(json형식)
+		,success : function(data) {//이벤트리스너 이벤트 끝나면 데이터를 어떻게 처리할지
+			 //필드값 재설정
+			 currentPage = parseInt(data.currentPage);
+             lastPage = parseInt(data.lastPage);
+             $('#btnList').trigger('click');
+			console.log("nextPage:"+currentPage);	
+				}
+		
+			});
+		
+		});
+
+	 $('#btnList').trigger('click');
+});
+</script>
+</head>
+<body>
+	<h1>Member</h1>
+	<table border="1">
+        <thead>
+            <tr>
+                <th>id</th>
+                <th>pw</th>
+                <th>name</th>
+                <th>age</th>
+                <th>gender</th>
+                <th>추가</th>
+                <th>수정</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><input type="text" id="id"></td>
+                <td><input type="password" id="pw"></td>
+                <td><input type="text" id="name"></td>
+                <td><input type="text" id="age"></td>
+                <td>
+                    <select id="gender">
+                        <option value="Male">남</option>
+                        <option value="Female">여</option>
+                    </select>
+                </td>
+                <td><button type="button" id="btnAdd">add</button></td>
+                <td><button type="button" id="btnModify">modify</button></td>
+            </tr>
+        </tbody>
+    </table>
+ 
+    <button type="button" id="btnList">회원리스트</button>
+    <button type="button" id="btnRemove">remove</button>
+    <table border="1">
+        <thead>
+            <tr>
+                <th></th>
+                <th>id</th>
+                <th>pw</th>
+                <th>name</th>
+                <th>age</th>
+                <th>gender</th>
+            </tr>
+        </thead>
+        <tbody id="list">
+        </tbody>
+    </table> 
+	<button type="button" id="previousPage">이전페이지</button>
+	<button type="button" id="nextPage">이후페이지</button>
+</body>
+</html>
